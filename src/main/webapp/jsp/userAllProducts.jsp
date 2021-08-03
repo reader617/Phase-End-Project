@@ -6,9 +6,10 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Insert title here</title>
+<link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
-	<form action = "/logout">
+	<form class = "logout" action = "/logout">
 		<button>Logout</button>
 	</form>
 	<table>
@@ -59,6 +60,7 @@
   		<td></td>
   		<td></td>
   		<td>
+  		<fmt:formatNumber type = "number" maxFractionDigits="2" value = "${total}"/>
   		<c:out value = "${total}"/>
   		</td>
   		</tr>

@@ -5,17 +5,16 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Insert title here</title>
-<link href="/css/style.css" rel="stylesheet" type = "text/css">
+<link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
  
- Enter the product information to update
+ Enter a username and password
  
- <form method="post" action="/update">
+ <form method="post" action="/createNewUser">
  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
- 	Product Name: <input type="text" name="pName"><br>
- 	Product Price: <input type="text" name="pPrice"><br>
- 	${error}
+ 	Name: <input type="text" name="name"><br>
+ 	Password: <input type="password" name="password"><br>
  	<input type="submit" value="Submit">
  </form><br>
  <br>

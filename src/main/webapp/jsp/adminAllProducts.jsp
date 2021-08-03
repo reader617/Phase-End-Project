@@ -6,14 +6,15 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Insert title here</title>
+<link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
 
-	<form action="/addProduct">
-		<button>Add Product</button>
-	</form>
-	<form action = "/logout">
+<form class = "logout" action = "/logout">
 		<button>Logout</button>
+	</form>
+	<form class= "add" action="/addProduct">
+		<button>Add Product</button>
 	</form>
 	<table>
 	<tr>

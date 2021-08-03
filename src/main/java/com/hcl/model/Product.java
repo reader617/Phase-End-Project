@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "Products")
 public class Product {
 
-	@Id @GeneratedValue(strategy = GenerationType.AUTO)
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private long prdId;
 	@Column(name = "prdname")
@@ -29,7 +29,7 @@ public class Product {
 	private int prdQuantity;
 	
 	public double calculateTotal() {
-		return prdPrice * prdQuantity;
+		return Double.parseDouble(String.format("%1$,.2f", (prdPrice * prdQuantity)));
 	}
 	
 }

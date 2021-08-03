@@ -1,28 +1,47 @@
 package com.hcl.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.hcl.service.UserDetailsServiceImpl;
+
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication()
-		.withUser("Me")
-		.password("notmyrealpassword")
-		.roles("USER")
-		.and()
-		.withUser("Simon")
-		.password("chosen1")
-		.roles("ADMIN");
+	@Bean
+	public UserDetailsService userDetailsService() {
+		return new UserDetailsServiceImpl();
 	}
-	
+
+	/*@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}*/
+
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+		authProvider.setUserDetailsService(userDetailsService());
+		authProvider.setPasswordEncoder(getPwdEncoder());
+		return authProvider;
+	}
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.authenticationProvider(authenticationProvider());
+	}
+
+	// Ways to refactor: use password encoder instead
 	@Bean
 	public PasswordEncoder getPwdEncoder () {
 		return NoOpPasswordEncoder.getInstance();
@@ -30,18 +49,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-		.antMatchers("/addProduct").hasRole("ADMIN")
-		.antMatchers("/userAllProducts").hasAnyRole("USER","ADMIN")
-		.antMatchers("/adminAllProducts").hasRole("ADMIN")
-		.antMatchers("/update").hasRole("ADMIN")
-		.antMatchers("/userUpdate").hasRole("USER")
-		.antMatchers("/userDelete").hasRole("USER")
-		.antMatchers("/delete").hasRole("ADMIN")
-		.and().formLogin()
-		.and()
-		.csrf().disable(); // I don't think we talked about tokens and I don't know
-		// how to inject them. I'm sure this is not good practice security wise but it
-		//works for now
+		.antMatchers("/", "/createNewUser").permitAll()
+		.antMatchers("/adminAllProducts", "/addProduct", "/update", "/delete").hasRole("ADMIN")
+		.antMatchers("/userAllProducts", "/userUpdate", "/userDelete")
+		.hasRole("USER")
+		.anyRequest().authenticated()
+		.and().formLogin().permitAll().and().logout().logoutSuccessUrl("/logoutSuccess").permitAll()
+		.and().exceptionHandling().accessDeniedPage("/403");
+		
 	}
+	
+	@Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/css/**");
+    }
+
 	
 }
