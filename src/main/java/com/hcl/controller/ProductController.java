@@ -3,6 +3,7 @@ package com.hcl.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -181,8 +182,10 @@ public class ProductController {
 	@PostMapping("/createNewUser")
 	public String createNewUser(@RequestParam String name, @RequestParam String password) {
 		User u = new User();
+		BCryptPasswordEncoder b = new BCryptPasswordEncoder();
 		u.setUsername(name);
-		u.setPassword(password);
+		String encryptP = b.encode(password);
+		u.setPassword(encryptP);
 		u.setRole("ROLE_USER");
 		u.setEnabled(true);
 		userDetails.createNewUser(u);
