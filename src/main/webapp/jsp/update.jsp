@@ -13,8 +13,9 @@
  
  <form method="post" action="/update">
  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
- 	Product Name: <input type="text" name="pName"><br>
- 	Product Price: <input type="text" name="pPrice"><br>
+ 	Product Id: <input type = "number" name = "pId" value = "${product.getPrdId()}" readonly = "readonly"><br>
+ 	Product Name: <input type="text" name="pName" value = "${product.getPrdName()}"><br>
+ 	Product Price: <input type="text" name="pPrice" value = "${product.getPrdPrice()}"><br>
  	${error}
  	<input type="submit" value="Submit">
  </form><br>

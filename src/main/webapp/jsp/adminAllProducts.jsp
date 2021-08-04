@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,6 +10,12 @@
 <link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
+
+<h3> Welcome 
+<security:authorize access="isAuthenticated()">
+<security:authentication property="principal.username" /> 
+</security:authorize>
+</h3>
 
 <form class = "logout" action = "/logout">
 		<button>Logout</button>

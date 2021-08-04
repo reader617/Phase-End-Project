@@ -13,7 +13,8 @@
  
  <form method="post" action="/userUpdate">
  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
- 	Product Quantity:<input type="number" name="pQuantity"><br>
+ Product Id: <input type = "number" name = "pId" value = "${product.getPrdId()}" readonly = "readonly"><br>
+ 	Product Quantity:<input type="number" name="pQuantity" value="${product.getPrdQuantity()}"><br>
  	${error}
  	<input type="submit" value="Submit">
  </form><br>

@@ -3,17 +3,14 @@ package com.hcl.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hcl.model.Product;
-import com.hcl.model.User;
 import com.hcl.service.ProductService;
 import com.hcl.service.UserDetailsServiceImpl;
 
@@ -26,17 +23,11 @@ public class ProductController {
 	@Autowired
 	private UserDetailsServiceImpl userDetails;
 	
-	private long id;
 	
-	@RequestMapping("/logoutSuccess") 
+	@GetMapping("/logoutSuccess") 
 	public String logoutSuccess() {
-		List<Product> pro = products.getAllProducts();
-		for (Product p: pro) {
-			p.setPrdQuantity(0);
-			products.updateProduct(p.getPrdId(), p);
-		}
-		
-		return "/logoutSuccess";
+		products.clearQuantity();
+		return "logoutSuccess";
 	}
 	
 	@GetMapping("/userAllProducts")
@@ -80,83 +71,64 @@ public class ProductController {
 	
 	@PostMapping("/addProduct")
 	public String addProduct(@RequestParam String pName, @RequestParam String pPrice, ModelMap m) {
-		Product p = new Product();
-		
-		try {
-			double price = Double.parseDouble(pPrice);
-			
-			if (price < 0) {
-				throw new NumberFormatException("price cannot be less than 0");
-			}
-			
-			p.setPrdName(pName);
-			p.setPrdPrice(price);
-			p.setPrdQuantity(0);
-			products.saveProduct(p);
+		if (products.saveProduct(pName, pPrice)) {
 			return "redirect:/adminAllProducts";
-		} catch (NumberFormatException c) {
+		} else {
 			m.addAttribute("error", "Please enter a vaild price!");
+			return "addProduct";
 		}
-		
-		return "addProduct";
 	}
 	
 	@GetMapping("/update")
-	public String updateProduct(long id) {
-		this.id = id;
-		return "/update";
+	public ModelAndView updateProduct(long id) {
+		//this.id = id;
+		Product p = new Product();
+		p = products.getProductById(id);
+		ModelAndView model = new ModelAndView();
+		model.setViewName("update");
+		model.addObject("product", p);
+		return model;
 	}
 	
 	
 	@PostMapping("/update")
-	public String updateProduct(@RequestParam String pName, @RequestParam String pPrice, ModelMap m) {
-		Product p = new Product();
+	public String updateProduct(@RequestParam long pId, @RequestParam String pName, @RequestParam String pPrice, ModelMap m) {
 		
-		try {
-			double price = Double.parseDouble(pPrice);
-			
-			if (price < 0) {
-				throw new NumberFormatException("price cannot be less than 0");
-			}
-			
-			p.setPrdName(pName);
-			p.setPrdPrice(price);
-			p.setPrdQuantity(0);
-			products.updateProduct(id, p);
+		if (products.updateProduct(pId, pName, pPrice, 0)) {
 			return "redirect:/adminAllProducts";
-		} catch (NumberFormatException c) {
+		} else {
+			Product p = new Product();
+			p = products.getProductById(pId);
 			m.addAttribute("error", "Please enter a vaild price!");
+			m.addAttribute("product", p);
+			return "update";
 		}
 		
-		return "update";
 	}
 	
 	@GetMapping("/userUpdate")
-	public String updateProductQuantity(long id) {
-		this.id = id;
-		return "/userUpdate";
+	public ModelAndView updateProductQuantity(long id) {
+		Product p = new Product();
+		p = products.getProductById(id);
+		ModelAndView model = new ModelAndView();
+		model.setViewName("userUpdate");
+		model.addObject("product", p);
+		return model;
 	}
 	
 	@PostMapping("/userUpdate")
-	public String updateProductQuantity(@RequestParam int pQuantity, ModelMap m) {
-	
-		Product p = new Product();
-		try {
-			if (pQuantity <= 0) {
-				throw new NumberFormatException("quantity cannot be less than 0");
-			}
-			Product p1 = products.getProductById(id);
-			p.setPrdName(p1.getPrdName());
-			p.setPrdPrice(p1.getPrdPrice());
-			p.setPrdQuantity(pQuantity);
-			
-			products.updateProduct(id, p);
+	public String updateProductQuantity(@RequestParam long pId, @RequestParam int pQuantity, ModelMap m) {
+		
+		Product p = products.getProductById(pId);
+		String pToString = "";
+		if (products.updateProduct(pId, p.getPrdName(), pToString + p.getPrdPrice(), pQuantity)) {
 			return "redirect:/userAllProducts";
-		} catch (NumberFormatException e) {
+		} else {
 			m.addAttribute("error", "quantity must be greater than 0");
+			m.addAttribute("product", p);
 		}
 		
-		return "/userUpdate";
+		return "userUpdate";
 	}
 	
 	@GetMapping("/delete")
@@ -168,8 +140,8 @@ public class ProductController {
 	@GetMapping("/userDelete")
 	public String userDelete(@RequestParam long id) {
 		Product p = products.getProductById(id);
-		p.setPrdQuantity(0);
-		products.updateProduct(id, p);
+		String dToString = "";
+		products.updateProduct(id, p.getPrdName(), dToString + p.getPrdPrice(), 0);
 		return "redirect:/userAllProducts";
 	}
 	
@@ -181,14 +153,7 @@ public class ProductController {
 	
 	@PostMapping("/createNewUser")
 	public String createNewUser(@RequestParam String name, @RequestParam String password) {
-		User u = new User();
-		BCryptPasswordEncoder b = new BCryptPasswordEncoder();
-		u.setUsername(name);
-		String encryptP = b.encode(password);
-		u.setPassword(encryptP);
-		u.setRole("ROLE_USER");
-		u.setEnabled(true);
-		userDetails.createNewUser(u);
+		userDetails.createNewUser(name, password);
 		
 		return "redirect:/userAllProducts";
 	}

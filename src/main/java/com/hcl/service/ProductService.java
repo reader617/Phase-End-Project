@@ -22,26 +22,69 @@ public class ProductService {
 		return productRecord;
 	}
 	
-	public void saveProduct(Product p) {
-		productRepo.save(p);
+	public boolean saveProduct(String name, String price) {
+		Product p1 = new Product();
+		try {
+			double newPrice = Double.parseDouble(price);
+			
+			if (newPrice < 0) {
+				throw new NumberFormatException("price cannot be less than 0");
+			}
+			
+			p1.setPrdName(name);
+			p1.setPrdPrice(newPrice);
+			p1.setPrdQuantity(0);
+			productRepo.save(p1);
+			
+		} catch (NumberFormatException c) {
+			return false;
+		}
+		
+		return true;
+		
 	}
 	
 	public Product getProductById(long id) {
 		return productRepo.findById(id).orElse(null);
 	}
 	
-	public Product updateProduct(long id, Product p) {
+	public boolean updateProduct(long id, String name, String price, int quantity) {
 		Product p1 = getProductById(id);
-		p1.setPrdName(p.getPrdName());
-		p1.setPrdPrice(p.getPrdPrice());
-		p1.setPrdQuantity(p.getPrdQuantity());
-		productRepo.save(p1);
 		
-		return p1;
+		try {
+			double newPrice = Double.parseDouble(price);
+			
+			if (newPrice < 0) {
+				throw new NumberFormatException("price cannot be less than 0");
+			}
+			
+			if (quantity <= 0) {
+				throw new NumberFormatException("quantity cannot be less than 0");
+			}
+			
+			p1.setPrdName(name);
+			p1.setPrdPrice(newPrice);
+			p1.setPrdQuantity(quantity);
+			productRepo.save(p1);
+			
+		} catch (NumberFormatException c) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public void deleteProductById(long id) {
 		productRepo.deleteById(id);
+	}
+	
+	public void clearQuantity() {
+		List<Product> pro = getAllProducts();
+		for (Product p: pro) {
+			p.setPrdQuantity(0);
+			productRepo.save(p);
+		}
+		
 	}
 	
 	
